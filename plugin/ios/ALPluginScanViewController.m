@@ -98,7 +98,33 @@
     self.scanView.delegate = self;
     self.detectedBarcodes = [NSMutableArray array];
 
-    self.doneButton = [ALPluginHelper createButtonForViewController:self config:self.uiConfig];
+    UIButton *adaptedButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [adaptedButton setTitle:@"Introducir datos manualmente" forState:UIControlStateNormal];
+    adaptedButton.translatesAutoresizingMaskIntoConstraints = NO;
+
+    [adaptedButton setBackgroundColor:[UIColor colorWithRed:101/255.0 green:158/255.0 blue:199/255.0 alpha:1.0]];
+
+    adaptedButton.layer.cornerRadius = 15;
+    adaptedButton.clipsToBounds = YES;
+
+    [adaptedButton addTarget:self action:@selector(adaptedButtonClick:) forControlEvents:UIControlEventTouchUpInside];
+
+    [adaptedButton setContentEdgeInsets:UIEdgeInsetsMake(8, 16, 8, 16)];
+
+    CGFloat fontSize = adaptedButton.titleLabel.font.pointSize;
+    adaptedButton.titleLabel.font = [UIFont boldSystemFontOfSize:fontSize];
+
+    adaptedButton.hidden = YES;
+    [self.view addSubview:adaptedButton];
+
+    [NSLayoutConstraint activateConstraints:@[
+            [adaptedButton.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor],
+            [adaptedButton.topAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.topAnchor constant:500]
+    ]];
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        adaptedButton.hidden = NO;
+    });
 
     self.scannedLabel = [ALPluginHelper createLabelForView:self.view];
 
@@ -258,6 +284,61 @@
         results[scanResult.pluginID] = resultDictMutable;
     }
     [self handleResult:results];
+}
+
+- (void)adaptedButtonClick:(UIButton *)sender {
+    NSMutableDictionary *fakeResults = [NSMutableDictionary dictionary];
+
+    // Configuración de valores iniciales
+    fakeResults[@"blobKey"] = @"";
+    fakeResults[@"confidence"] = @0;
+    fakeResults[@"cropRect"] = @{@"height": @0, @"width": @0, @"x": @0, @"y": @0};
+
+    NSMutableDictionary *mrzResult = [NSMutableDictionary dictionary];
+    mrzResult[@"allCheckDigitsValid"] = @NO;
+    mrzResult[@"checkDigitDateOfBirth"] = @"";
+    mrzResult[@"checkDigitDateOfExpiry"] = @"";
+    mrzResult[@"checkDigitDocumentNumber"] = @"";
+    mrzResult[@"checkDigitFinal"] = @"";
+    mrzResult[@"checkDigitPersonalNumber"] = @"";
+    mrzResult[@"dateOfBirth"] = @"";
+    mrzResult[@"dateOfBirthObject"] = @"";
+    mrzResult[@"dateOfExpiry"] = @"";
+    mrzResult[@"dateOfExpiryObject"] = @"";
+    mrzResult[@"documentNumber"] = @"";
+    mrzResult[@"documentType"] = [NSNull null];
+
+    NSMutableDictionary *fieldConfidences = [NSMutableDictionary dictionary];
+    fieldConfidences[@"checkDigitDateOfBirth"] = @"";
+    fieldConfidences[@"checkDigitDateOfExpiry"] = @"";
+    fieldConfidences[@"checkDigitDocumentNumber"] = @"";
+    fieldConfidences[@"checkDigitFinal"] = @"";
+    fieldConfidences[@"checkDigitPersonalNumber"] = @"";
+    fieldConfidences[@"dateOfBirth"] = @"";
+    fieldConfidences[@"dateOfExpiry"] = @"";
+    fieldConfidences[@"documentNumber"] = @"";
+    fieldConfidences[@"documentType"] = [NSNull null];
+    fieldConfidences[@"givenNames"] = @"";
+    fieldConfidences[@"issuingCountryCode"] = [NSNull null];
+    fieldConfidences[@"mrzString"] = @"";
+    fieldConfidences[@"nationalityCountryCode"] = [NSNull null];
+    fieldConfidences[@"personalNumber"] = @"";
+    fieldConfidences[@"sex"] = [NSNull null];
+    fieldConfidences[@"surname"] = @"";
+
+    mrzResult[@"fieldConfidences"] = fieldConfidences;
+    mrzResult[@"givenNames"] = @"";
+    mrzResult[@"issuingCountryCode"] = [NSNull null];
+    mrzResult[@"mrzString"] = @"";
+    mrzResult[@"nationalityCountryCode"] = [NSNull null];
+    mrzResult[@"personalNumber"] = @"";
+    mrzResult[@"sex"] = [NSNull null];
+    mrzResult[@"surname"] = @"";
+
+    fakeResults[@"mrzResult"] = mrzResult;
+    fakeResults[@"pluginID"] = @"";
+
+    [self handleResult:fakeResults];
 }
 
 // MARK: - ALScanViewDelegate

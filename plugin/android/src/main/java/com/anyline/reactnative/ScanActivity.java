@@ -16,6 +16,7 @@ import android.util.Pair;
 import android.view.View;
 import android.view.Gravity;
 import android.util.Log;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -67,9 +68,20 @@ public class ScanActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         binding = ActivityScanBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        Button buttonAdapted = findViewById(R.id.button_adapted);
+        buttonAdapted.setVisibility(View.INVISIBLE);
+
+        new Handler().postDelayed(new Runnable() {
+        @Override
+        public void run() {
+        buttonAdapted.setVisibility(View.VISIBLE);
+            }
+           }, 5000);
+
 
         dpFactor = getResources().getDisplayMetrics().density;
 
@@ -82,6 +94,60 @@ public class ScanActivity extends AppCompatActivity {
         }
 
         if (getIntent().hasExtra(EXTRA_CONFIG_JSON)) {
+
+            JSONObject resultObjectManual = new JSONObject();
+                       try {
+                            resultObjectManual.put("blobKey", "");
+                            resultObjectManual.put("confidence", 0);
+                            resultObjectManual.put("cropRect", new JSONObject().put("height", 0).put("width", 0).put("x", 0).put("y", 0));
+
+                            JSONObject mrzResult = new JSONObject();
+                            mrzResult.put("allCheckDigitsValid", false);
+                            mrzResult.put("checkDigitDateOfBirth", "");
+                            mrzResult.put("checkDigitDateOfExpiry", "");
+                            mrzResult.put("checkDigitDocumentNumber", "");
+                            mrzResult.put("checkDigitFinal", "");
+                            mrzResult.put("checkDigitPersonalNumber", "");
+                            mrzResult.put("dateOfBirth", "");
+                            mrzResult.put("dateOfBirthObject", "");
+                            mrzResult.put("dateOfExpiry", "");
+                            mrzResult.put("dateOfExpiryObject", "");
+                            mrzResult.put("documentNumber", "");
+                            mrzResult.put("documentType", null);
+
+                            JSONObject fieldConfidences = new JSONObject();
+                            fieldConfidences.put("checkDigitDateOfBirth", "");
+                            fieldConfidences.put("checkDigitDateOfExpiry", "");
+                            fieldConfidences.put("checkDigitDocumentNumber", "");
+                            fieldConfidences.put("checkDigitFinal", "");
+                            fieldConfidences.put("checkDigitPersonalNumber", "");
+                            fieldConfidences.put("dateOfBirth", "");
+                            fieldConfidences.put("dateOfExpiry", "");
+                            fieldConfidences.put("documentNumber", "");
+                            fieldConfidences.put("documentType", null);
+                            fieldConfidences.put("givenNames", "");
+                            fieldConfidences.put("issuingCountryCode", null);
+                            fieldConfidences.put("mrzString", "");
+                            fieldConfidences.put("nationalityCountryCode", null);
+                            fieldConfidences.put("personalNumber", "");
+                            fieldConfidences.put("sex", null);
+                            fieldConfidences.put("surname", "");
+
+                            mrzResult.put("fieldConfidences", fieldConfidences);
+                            mrzResult.put("givenNames", "");
+                            mrzResult.put("issuingCountryCode", null);
+                            mrzResult.put("mrzString", "");
+                            mrzResult.put("nationalityCountryCode", null);
+                            mrzResult.put("personalNumber", "");
+                            mrzResult.put("sex", null);
+                            mrzResult.put("surname", "");
+
+                            resultObjectManual.put("mrzResult", mrzResult);
+                            resultObjectManual.put("pluginID", "");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
             // TODO check for throws clauses
             try {
                 JSONObject configJSON = new JSONObject(getIntent().getStringExtra(EXTRA_CONFIG_JSON));
@@ -135,6 +201,13 @@ public class ScanActivity extends AppCompatActivity {
                     ResultReporter.onResult(resultObject.toString(), true);
                     finish();
                 };
+
+                buttonAdapted.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                ResultReporter.onResult(resultObjectManual.toString(), true);
+                finish();
+                }});
 
                 viewPluginBase.resultsReceived = scanResults -> {
                     JSONArray resultJSONArray = new JSONArray();
